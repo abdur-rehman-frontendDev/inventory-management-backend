@@ -14,7 +14,6 @@ const productrouter = require("../Routers/ProductRouter");
 const orderrouter = require("../Routers/orderRouter");
 const categoryrouter = require("../Routers/categoryRouter");
 const notificationrouter = require("../Routers/notificationRouters");
-// const activityrouter = require("../Routers/activityRouter");
 const inventoryrouter = require("../Routers/inventoryRouter");
 const salesrouter = require("../Routers/salesRouter");
 const supplierrouter = require("../Routers/supplierrouter");
