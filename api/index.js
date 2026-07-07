@@ -24,66 +24,21 @@ const app = express();
 
 MongoDBconfig();
 
-const allowedOrigins = [
-  "https://mumeez-inventory.vercel.app",
-  "http://localhost:3000",
-];
+app.use(cors({
+  origin: [
+    "https://mumeez-inventory.vercel.app",
+    "http://localhost:3000"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
+app.options("*", cors());
 
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-
-      callback(new Error("Not allowed by CORS"));
-    },
-
-    credentials: true,
-  }),
-);
-
-// app.use(cors({
-//   origin: [
-//     "https://mumeez-inventory.vercel.app",
-//     "http://localhost:3000"
-//   ],
-//   credentials: true,
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"]
-// }));
-
-// app.options("*", cors());
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
-
-
-app.options("*", (req,res)=>{
-
-res.header(
-"Access-Control-Allow-Origin",
-req.headers.origin
-);
-
-res.header(
-"Access-Control-Allow-Credentials",
-"true"
-);
-
-res.header(
-"Access-Control-Allow-Headers",
-"Content-Type, Authorization"
-);
-
-res.header(
-"Access-Control-Allow-Methods",
-"GET,POST,PUT,DELETE,OPTIONS"
-);
-
-res.sendStatus(200);
-
-});
 
 app.use("/api/auth", authrouter);
 app.use("/api/product", productrouter);
