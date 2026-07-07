@@ -2,7 +2,7 @@ const User = require("../models/Usermodel");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../libs/Tokengenerator");
 const Cloundinary = require("../libs/Cloundinary");
-const logActivity = require("../libs/logger");
+// const logActivity = require("../libs/logger");
 
 module.exports.signup = async (req, res) => {
   try {
@@ -38,14 +38,14 @@ module.exports.signup = async (req, res) => {
       },
     });
 
-    await logActivity({
-      action: "User Signup",
-      description: `User ${name} signed up.`,
-      entity: "user",
-      entityId: savedUser._id,
-      userId: savedUser._id,
-      ipAddress: req.ip,
-    });
+    // await logActivity({
+    //   action: "User Signup",
+    //   description: `User ${name} signed up.`,
+    //   entity: "user",
+    //   entityId: savedUser._id,
+    //   userId: savedUser._id,
+    //   ipAddress: req.ip,
+    // });
   } catch (error) {
     console.error("Error during signup:", error.message);
     res.status(400).json({ error: "Error during signup: " + error.message });
@@ -62,40 +62,16 @@ module.exports.login = async (req, res) => {
       return res.status(400).json({ error: "No user found" });
     }
 
-    // const hasedpassword = await bcrypt.compare(
-    //   password,
-    //   duplicatedUser.password,
-    // );
-
-    if (!hasedpassword) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    console.log("User found");
-
     const hasedpassword = await bcrypt.compare(
       password,
       duplicatedUser.password,
     );
 
-    console.log("Password matched");
+    if (!hasedpassword) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const token = await generateToken(duplicatedUser, res);
-
-    console.log("Token generated");
-
-    await logActivity({
-      action: "User Login",
-      description: `User ${duplicatedUser.name} logged in.`,
-      entity: "user",
-      entityId: duplicatedUser._id,
-      userId: duplicatedUser._id,
-      ipAddress: req.ip,
-    });
-
-    console.log("Activity logged");
-
-    // const token = await generateToken(duplicatedUser, res);
 
     // await logActivity({
     //   action: "User Login",
@@ -105,21 +81,16 @@ module.exports.login = async (req, res) => {
     //   userId: duplicatedUser._id,
     //   ipAddress: ipAddress,
     // });
-    // return res.status(201).json({
-    //   message: "login successfully",
-    //   user: {
-    //     id: duplicatedUser.id,
-    //     name: duplicatedUser.name,
-    //     email: duplicatedUser.email,
-    //     role: duplicatedUser.role,
-    //     ProfilePic: duplicatedUser.ProfilePic,
-    //     token,
-    //   },
-    // });
-
-    return res.status(200).json({
-      success: true,
-      user: duplicatedUser.email,
+    return res.status(201).json({
+      message: "login successfully",
+      user: {
+        id: duplicatedUser.id,
+        name: duplicatedUser.name,
+        email: duplicatedUser.email,
+        role: duplicatedUser.role,
+        ProfilePic: duplicatedUser.ProfilePic,
+        token,
+      },
     });
   } catch (error) {
     console.log("LOGIN ERROR:", error);
