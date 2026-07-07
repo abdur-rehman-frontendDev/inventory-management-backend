@@ -24,13 +24,17 @@ const app = express();
 
 MongoDBconfig();
 
-app.use(
-  cors({
-    origin: ["https://mumeez-inventory.vercel.app", "http://localhost:3000"],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  }),
-);
+app.use(cors({
+  origin: [
+    "https://mumeez-inventory.vercel.app",
+    "http://localhost:3000"
+  ],
+  credentials: true,
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.options("*", cors());
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
