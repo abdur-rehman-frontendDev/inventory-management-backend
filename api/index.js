@@ -21,7 +21,7 @@ const stocktransactionrouter = require("../Routers/stocktransactionrouter");
 
 const app = express();
 
-MongoDBconfig();
+await MongoDBconfig();
 
 app.use(cors({
   origin: [

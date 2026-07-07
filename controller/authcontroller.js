@@ -62,14 +62,38 @@ module.exports.login = async (req, res) => {
       return res.status(400).json({ error: "No user found" });
     }
 
+    // const hasedpassword = await bcrypt.compare(
+    //   password,
+    //   duplicatedUser.password,
+    // );
+
+    if (!hasedpassword) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    console.log("User found");
+
     const hasedpassword = await bcrypt.compare(
       password,
       duplicatedUser.password,
     );
 
-    if (!hasedpassword) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    console.log("Password matched");
+
+    const token = await generateToken(duplicatedUser, res);
+
+    console.log("Token generated");
+
+    await logActivity({
+      action: "User Login",
+      description: `User ${duplicatedUser.name} logged in.`,
+      entity: "user",
+      entityId: duplicatedUser._id,
+      userId: duplicatedUser._id,
+      ipAddress: req.ip,
+    });
+
+    console.log("Activity logged");
 
     // const token = await generateToken(duplicatedUser, res);
 
