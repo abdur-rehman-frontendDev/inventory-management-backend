@@ -2,7 +2,7 @@ const User = require("../models/Usermodel");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../libs/Tokengenerator");
 const Cloundinary = require("../libs/Cloundinary");
-// const logActivity = require("../libs/logger");
+const logActivity = require("../libs/logger");
 
 module.exports.signup = async (req, res) => {
   try {
