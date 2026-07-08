@@ -14,6 +14,7 @@ const productrouter = require("../Routers/ProductRouter");
 const orderrouter = require("../Routers/orderRouter");
 const categoryrouter = require("../Routers/categoryRouter");
 const notificationrouter = require("../Routers/notificationRouters");
+// const activityrouter = require("../Routers/activityRouter");
 const inventoryrouter = require("../Routers/inventoryRouter");
 const salesrouter = require("../Routers/salesRouter");
 const supplierrouter = require("../Routers/supplierrouter");
@@ -21,7 +22,7 @@ const stocktransactionrouter = require("../Routers/stocktransactionrouter");
 
 const app = express();
 
-await MongoDBconfig();
+MongoDBconfig();
 
 app.use(cors({
   origin: [
@@ -29,12 +30,11 @@ app.use(cors({
     "http://localhost:3000"
   ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.options("*", cors());
-
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());

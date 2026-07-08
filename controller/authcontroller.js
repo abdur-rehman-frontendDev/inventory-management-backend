@@ -38,14 +38,14 @@ module.exports.signup = async (req, res) => {
       },
     });
 
-    // await logActivity({
-    //   action: "User Signup",
-    //   description: `User ${name} signed up.`,
-    //   entity: "user",
-    //   entityId: savedUser._id,
-    //   userId: savedUser._id,
-    //   ipAddress: req.ip,
-    // });
+    await logActivity({
+      action: "User Signup",
+      description: `User ${name} signed up.`,
+      entity: "user",
+      entityId: savedUser._id,
+      userId: savedUser._id,
+      ipAddress: req.ip,
+    });
   } catch (error) {
     console.error("Error during signup:", error.message);
     res.status(400).json({ error: "Error during signup: " + error.message });
@@ -73,14 +73,14 @@ module.exports.login = async (req, res) => {
 
     const token = await generateToken(duplicatedUser, res);
 
-    // await logActivity({
-    //   action: "User Login",
-    //   description: `User ${duplicatedUser.name} logged in.`,
-    //   entity: "user",
-    //   entityId: duplicatedUser._id,
-    //   userId: duplicatedUser._id,
-    //   ipAddress: ipAddress,
-    // });
+    await logActivity({
+      action: "User Login",
+      description: `User ${duplicatedUser.name} logged in.`,
+      entity: "user",
+      entityId: duplicatedUser._id,
+      userId: duplicatedUser._id,
+      ipAddress: ipAddress,
+    });
     return res.status(201).json({
       message: "login successfully",
       user: {
