@@ -71,31 +71,30 @@ module.exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // const token = await generateToken(duplicatedUser, res);
+    const token = await generateToken(duplicatedUser, res);
 
-    // await logActivity({
-    //   action: "User Login",
-    //   description: `User ${duplicatedUser.name} logged in.`,
-    //   entity: "user",
-    //   entityId: duplicatedUser._id,
-    //   userId: duplicatedUser._id,
-    //   ipAddress: ipAddress,
-    // });
-    // return res.status(201).json({
-    //   message: "login successfully",
-    //   user: {
-    //     id: duplicatedUser.id,
-    //     name: duplicatedUser.name,
-    //     email: duplicatedUser.email,
-    //     role: duplicatedUser.role,
-    //     ProfilePic: duplicatedUser.ProfilePic,
-    //     token,
-    //   },
-    // });
+    await logActivity({
+      action: "User Login",
+      description: `User ${duplicatedUser.name} logged in.`,
+      entity: "user",
+      entityId: duplicatedUser._id,
+      userId: duplicatedUser._id,
+      ipAddress: ipAddress,
+    });
+    return res.status(201).json({
+      message: "login successfully",
+      user: {
+        id: duplicatedUser.id,
+        name: duplicatedUser.name,
+        email: duplicatedUser.email,
+        role: duplicatedUser.role,
+        ProfilePic: duplicatedUser.ProfilePic,
+        token,
+      },
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: error.message,
+    res.status(400).json({
+      error: "Error in login to the page",
     });
   }
 };
@@ -145,10 +144,12 @@ module.exports.updateProfile = async (req, res) => {
         });
       } catch (cloudinaryError) {
         console.error("Cloudinary upload failed:", cloudinaryError);
-        return res.status(500).json({
-          message: "Image upload failed",
-          error: cloudinaryError.message,
-        });
+        return res
+          .status(500)
+          .json({
+            message: "Image upload failed",
+            error: cloudinaryError.message,
+          });
       }
     } else {
       return res.status(400).json({ message: "No profile picture provided" });
