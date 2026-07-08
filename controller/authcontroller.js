@@ -93,8 +93,9 @@ module.exports.login = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(400).json({
-      error: "Error in login to the page",
+    console.error(error);
+    res.status(500).json({
+      error: error.message,
     });
   }
 };
@@ -144,12 +145,10 @@ module.exports.updateProfile = async (req, res) => {
         });
       } catch (cloudinaryError) {
         console.error("Cloudinary upload failed:", cloudinaryError);
-        return res
-          .status(500)
-          .json({
-            message: "Image upload failed",
-            error: cloudinaryError.message,
-          });
+        return res.status(500).json({
+          message: "Image upload failed",
+          error: cloudinaryError.message,
+        });
       }
     } else {
       return res.status(400).json({ message: "No profile picture provided" });
