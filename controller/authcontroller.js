@@ -73,14 +73,6 @@ module.exports.login = async (req, res) => {
 
     const token = await generateToken(duplicatedUser, res);
 
-    // await logActivity({
-    //   action: "User Login",
-    //   description: `User ${duplicatedUser.name} logged in.`,
-    //   entity: "user",
-    //   entityId: duplicatedUser._id,
-    //   userId: duplicatedUser._id,
-    //   ipAddress: ipAddress,
-    // });
     return res.status(201).json({
       message: "login successfully",
       user: {
