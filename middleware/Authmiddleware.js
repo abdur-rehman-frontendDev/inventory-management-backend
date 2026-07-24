@@ -4,9 +4,6 @@ require("dotenv").config();
 
 module.exports.authmiddleware = async (req, res, next) => {
   try {
-    console.log("Cookies:", req.cookies);
-    console.log("Token:", req.cookies.Inventorymanagmentsystem);
-
     let token = req.cookies.Inventorymanagmentsystem;
 
     if (!token && req.headers.authorization) {
