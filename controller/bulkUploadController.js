@@ -2,6 +2,10 @@ const XLSX = require("xlsx");
 
 const Product = require("../models/Productmodel");
 const Category = require("../models/Categorymodel");
+const {
+  generateSKU,
+  generateBarcode,
+} = require("../libs/productCodeGenerator");
 
 const requiredColumns = require("../helpers/excelColumns");
 
@@ -105,25 +109,26 @@ module.exports.UploadProducts = async (req, res) => {
     // Loop Through Excel
     // ==========================
 
-    excelData.forEach((row, index) => {
+    for (const [index, row] of excelData.entries()) {
       const rowNumber = index + 2;
 
       const productName = normalizeString(row.name);
 
-      const description = row.Desciption ? row.Desciption.trim() : "";
+      const description = row.Description?.trim() || "";
 
       const categoryName = normalizeString(row.Category);
 
-      const price = Number(row.Price);
+      const purchasePrice = Number(row.purchasePrice);
+
+      const sellingPrice = Number(row.sellingPrice);
 
       const quantity = Number(row.quantity);
-
-      // Required Validation
 
       if (
         !productName ||
         !categoryName ||
-        !isPositiveNumber(price) ||
+        !isPositiveNumber(purchasePrice) ||
+        !isPositiveNumber(sellingPrice) ||
         !isPositiveNumber(quantity)
       ) {
         skippedProducts.push({
@@ -132,10 +137,8 @@ module.exports.UploadProducts = async (req, res) => {
           reason: "Invalid data",
         });
 
-        return;
+        continue;
       }
-
-      // Duplicate Inside Excel
 
       if (excelProductNames.has(productName)) {
         skippedProducts.push({
@@ -144,12 +147,10 @@ module.exports.UploadProducts = async (req, res) => {
           reason: "Duplicate product in Excel",
         });
 
-        return;
+        continue;
       }
 
       excelProductNames.add(productName);
-
-      // Category Mapping
 
       const category = categoryMap[categoryName];
 
@@ -160,43 +161,70 @@ module.exports.UploadProducts = async (req, res) => {
           reason: `Category '${row.Category}' not found`,
         });
 
-        return;
+        continue;
       }
-
-      // Existing Product
 
       const existingProduct = productMap[productName];
 
       if (existingProduct) {
         updateProducts.push({
           updateOne: {
-            filter: {
-              _id: existingProduct._id,
-            },
+            filter: { _id: existingProduct._id },
             update: {
               $set: {
-                Desciption: description,
+                sku: row.sku?.trim() || existingProduct.sku,
+                barcode: row.barcode?.trim() || existingProduct.barcode,
                 Category: category._id,
-                Price: price,
-                quantity: quantity,
+                brand: row.brand?.trim() || "",
+                unit: row.unit?.trim() || "Piece",
+                purchasePrice,
+                sellingPrice,
+                Price: sellingPrice,
+                quantity,
+                reorderLevel: Number(row.reorderLevel) || 5,
+                status: row.status || "Active",
+                updatedBy: userId,
+                Description: description,
               },
             },
           },
         });
 
-        return;
+        continue;
       }
-
-      // New Product
 
       insertProducts.push({
         name: row.name.trim(),
-        Desciption: description,
+
+        sku: row.sku?.trim() || (await generateSKU()),
+
+        barcode: row.barcode?.trim() || (await generateBarcode()),
+
         Category: category._id,
-        Price: price,
-        quantity: quantity,
+
+        brand: row.brand?.trim() || "",
+
+        unit: row.unit?.trim() || "Piece",
+
+        purchasePrice,
+
+        sellingPrice,
+
+        Price: sellingPrice,
+
+        quantity,
+
+        reorderLevel: Number(row.reorderLevel) || 5,
+
+        status: row.status || "Active",
+
+        createdBy: userId,
+
+        updatedBy: userId,
+
+        Description: description,
       });
-    });
+    }
 
     // ==========================
     // INSERT PRODUCTS

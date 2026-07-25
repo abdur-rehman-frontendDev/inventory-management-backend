@@ -1,7 +1,14 @@
 module.exports = [
   "name",
-  "Desciption",
+  "sku",
+  "barcode",
   "Category",
-  "Price",
+  "brand",
+  "unit",
+  "purchasePrice",
+  "sellingPrice",
   "quantity",
+  "reorderLevel",
+  "status",
+  "Description",
 ];

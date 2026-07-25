@@ -148,7 +148,7 @@ const searchOrder = async (req, res) => {
 
         const searchdata = await Order.find({
             $or: [
-                { Desciption: { $regex: query, $options: "i" } },
+                { Description: { $regex: query, $options: "i" } },
                 { status: { $regex: query, $options: "i" } },
                 { "user.name": { $regex: query, $options: "i" } }
             ]

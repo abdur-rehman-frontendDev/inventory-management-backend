@@ -1,4 +1,8 @@
 const Product = require("../models/Productmodel");
+const {
+  generateSKU,
+  generateBarcode,
+} = require("../libs/productCodeGenerator");
 
 const logActivity = require("../libs/logger");
 
@@ -7,20 +11,53 @@ module.exports.Addproduct = async (req, res) => {
   const ipAddress = req.ip;
 
   try {
-    const { name, Desciption, Category, Price, quantity } = req.body;
+    const {
+      name,
+      Description,
+      Category,
+      purchasePrice,
+      sellingPrice,
+      quantity,
+      brand,
+      unit,
+      reorderLevel,
+      status,
+      sku,
+      barcode,
+    } = req.body;
 
-    if (!name || !Category || !Desciption || !Price || !quantity) {
+    if (
+      !name ||
+      !Category ||
+      purchasePrice == null ||
+      sellingPrice == null ||
+      quantity == null
+    ) {
       return res
         .status(400)
         .json({ error: "Please provide all product details." });
     }
 
+    const generatedSku = sku?.trim() || (await generateSKU());
+
+    const generatedBarcode = barcode?.trim() || (await generateBarcode());
+
     const createdProduct = new Product({
       name,
-      Desciption,
+      sku: generatedSku,
+      barcode: generatedBarcode,
       Category,
-      Price,
+      brand: brand?.trim() || "",
+      unit: unit?.trim() || "Piece",
+      purchasePrice,
+      sellingPrice,
+      Price: sellingPrice,
       quantity,
+      reorderLevel: reorderLevel || 5,
+      status: status || "Active",
+      Description,
+      createdBy: userId,
+      updatedBy: userId,
     });
 
     await createdProduct.save();
@@ -109,6 +146,8 @@ module.exports.EditProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found." });
     }
 
+    updatedData.updatedBy = userId;
+    
     await logActivity({
       action: "Update Product",
       description: `Product "${updatedProduct.name}" was updated.`,
@@ -161,11 +200,9 @@ module.exports.getTopProductsByQuantity = async (req, res) => {
 
     res.status(200).json({ success: true, topProducts });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error fetching products for chart",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching products for chart",
+      error: error.message,
+    });
   }
 };
