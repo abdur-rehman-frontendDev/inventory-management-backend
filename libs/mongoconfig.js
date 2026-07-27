@@ -5,42 +5,42 @@ let cached = global.mongoose;
 if (!cached) {
   cached = global.mongoose = {
     conn: null,
+    promise: null,
   };
 }
 
 async function MongoDBconfig() {
   if (!process.env.MONGODB_URL) {
-    throw new Error("MONGODB_URL is missing in .env");
+    throw new Error("MONGODB_URL is missing");
+  }
+
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    mongoose.set("bufferCommands", false);
+
+    cached.promise = mongoose.connect(process.env.MONGODB_URL, {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
   }
 
   try {
-    if (cached.conn) {
-      return cached.conn;
-    }
+    cached.conn = await cached.promise;
 
-    cached.conn = await mongoose.connect(process.env.MONGODB_URL);
-
-    console.log("MongoDB Connected");
+    console.log("✅ MongoDB Connected");
 
     return cached.conn;
   } catch (err) {
-    console.log(err);
+    cached.promise = null;
+
+    console.error("MongoDB Connection Error:", err);
+
+    throw err;
   }
 }
 
 module.exports = { MongoDBconfig };
-
-// const mongoose=require("mongoose")
-
-// require("dotenv").config()
-
-// module.exports.MongoDBconfig=()=>{
-//     mongoose.connect(process.env.MONGODB_URL)
-//     .then(()=>{
-//         console.log("connected to database successfully")
-//     })
-//     .catch((err)=>{
-//         console.log("MonogoDB Connection Error",err)
-//     })
-
-// }

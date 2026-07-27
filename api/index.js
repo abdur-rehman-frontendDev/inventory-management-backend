@@ -1,13 +1,13 @@
 const path = require("path");
-require("dotenv").config({
-  path: path.resolve(__dirname, "../.env"),
-});
-
+// require("dotenv").config({
+//   path: path.resolve(__dirname, "../.env"),
+// });
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
-const { MongoDBconfig } = require("../libs/mongoconfig");
+const databaseMiddleware = require("../middleware/database");
 
 const authrouter = require("../Routers/authRouther");
 const productrouter = require("../Routers/ProductRouter");
@@ -21,17 +21,16 @@ const stocktransactionrouter = require("../Routers/stocktransactionrouter");
 
 const app = express();
 
-MongoDBconfig();
+app.use(databaseMiddleware);
 
-app.use(cors({
-  origin: [
-    "https://mumeez-inventory.vercel.app",
-    "http://localhost:3000"
-  ],
-  credentials: true,
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(
+  cors({
+    origin: ["https://mumeez-inventory.vercel.app", "http://localhost:3000"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.options("*", cors());
 
