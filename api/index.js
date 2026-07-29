@@ -18,6 +18,8 @@ const inventoryrouter = require("../Routers/inventoryRouter");
 const salesrouter = require("../Routers/salesRouter");
 const supplierrouter = require("../Routers/supplierrouter");
 const stocktransactionrouter = require("../Routers/stocktransactionrouter");
+const posRouter = require("../Routers/posRouter");
+const posSalesRouter = require("../Routers/posSalesRouter");
 
 const app = express();
 
@@ -46,6 +48,8 @@ app.use("/api/inventory", inventoryrouter);
 app.use("/api/sales", salesrouter);
 app.use("/api/supplier", supplierrouter);
 app.use("/api/stocktransaction", stocktransactionrouter);
+app.use("/api/pos", posRouter);
+app.use("/api/posSales", posSalesRouter);
 
 app.get("/", (req, res) => {
   res.send("Backend Running Successfully");
