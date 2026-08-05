@@ -2,6 +2,7 @@ const Product = require("../models/Productmodel");
 const Category = require("../models/Categorymodel");
 const logActivity = require("../libs/logger");
 const StockTransaction = require("../models/StockTranscationmodel");
+const paginate = require("../helpers/pagination");
 
 module.exports.createCategory = async (req, res) => {
   try {
@@ -69,27 +70,37 @@ module.exports.RemoveCategory = async (req, res) => {
 
 module.exports.getCategory = async (req, res) => {
   try {
-    const allCategory = await Category.find({});
+    const { page = 1, limit = 10 } = req.query;
 
-    if (!allCategory || allCategory.length === 0) {
-      return res.status(404).json({ message: "Categories not found" });
-    }
+    const result = await paginate({
+      model: Category,
+      page,
+      limit,
+      sort: { createdAt: -1 },
+    });
 
     const categoriesWithCount = await Promise.all(
-      allCategory.map(async (category) => {
-        const count = await Product.countDocuments({ Category: category._id });
+      result.data.map(async (category) => {
+        const count = await Product.countDocuments({
+          Category: category._id,
+        });
+
         return {
           ...category.toObject(),
           productCount: count,
         };
-      }),
+      })
     );
 
-    res.status(200).json({ categoriesWithCount });
+    res.status(200).json({
+      categories: categoriesWithCount,
+      pagination: result.pagination,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error getting categories", error: error.message });
+    res.status(500).json({
+      message: "Error getting categories",
+      error: error.message,
+    });
   }
 };
 
@@ -132,22 +143,58 @@ module.exports.updateCategory = async (req, res) => {
 
 module.exports.Searchcategory = async (req, res) => {
   try {
-    const { query } = req.query;
+    const { query, page = 1, limit = 10 } = req.query;
+
     if (!query) {
-      return res.status(400).json({ message: "Query parameter is required" });
+      return res.status(400).json({
+        message: "Query parameter is required",
+      });
     }
 
-    const category = await Category.find({
-      $or: [
-        { name: { $regex: query, $options: "i" } },
-        { description: { $regex: query, $options: "i" } },
-      ],
+    const result = await paginate({
+      model: Category,
+      page,
+      limit,
+      query: {
+        $or: [
+          {
+            name: {
+              $regex: query,
+              $options: "i",
+            },
+          },
+          {
+            description: {
+              $regex: query,
+              $options: "i",
+            },
+          },
+        ],
+      },
+      sort: { createdAt: -1 },
     });
 
-    res.json(category);
+    const categoriesWithCount = await Promise.all(
+      result.data.map(async (category) => {
+        const count = await Product.countDocuments({
+          Category: category._id,
+        });
+
+        return {
+          ...category.toObject(),
+          productCount: count,
+        };
+      })
+    );
+
+    res.status(200).json({
+      categories: categoriesWithCount,
+      pagination: result.pagination,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error finding category", error: error.message });
+    res.status(500).json({
+      message: "Error finding category",
+      error: error.message,
+    });
   }
 };
