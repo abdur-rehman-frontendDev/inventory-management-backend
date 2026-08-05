@@ -20,6 +20,8 @@ const supplierrouter = require("../Routers/supplierrouter");
 const stocktransactionrouter = require("../Routers/stocktransactionrouter");
 const posRouter = require("../Routers/posRouter");
 const posSalesRouter = require("../Routers/posSalesRouter");
+const dashboardRouter = require("../Routers/dashboardRouter");
+const reportsRouter = require("../Routers/reportsRouter");
 
 const app = express();
 
@@ -40,6 +42,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 app.use("/api/auth", authrouter);
+app.use("/api/dashboard", dashboardRouter);
 app.use("/api/product", productrouter);
 app.use("/api/order", orderrouter);
 app.use("/api/category", categoryrouter);
@@ -50,6 +53,7 @@ app.use("/api/supplier", supplierrouter);
 app.use("/api/stocktransaction", stocktransactionrouter);
 app.use("/api/pos", posRouter);
 app.use("/api/posSales", posSalesRouter);
+app.use("/api/reports", reportsRouter);
 
 app.get("/", (req, res) => {
   res.send("Backend Running Successfully");

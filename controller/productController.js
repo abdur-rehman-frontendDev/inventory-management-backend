@@ -3,6 +3,10 @@ const {
   generateSKU,
   generateBarcode,
 } = require("../libs/productCodeGenerator");
+const {
+  getPagination,
+  buildPagination,
+} = require("../helpers/paginationHelper");
 
 const logActivity = require("../libs/logger");
 
@@ -147,7 +151,7 @@ module.exports.EditProduct = async (req, res) => {
     }
 
     updatedData.updatedBy = userId;
-    
+
     await logActivity({
       action: "Update Product",
       description: `Product "${updatedProduct.name}" was updated.`,
@@ -177,10 +181,9 @@ module.exports.SearchProduct = async (req, res) => {
       $or: [
         { name: { $regex: query, $options: "i" } },
         { Description: { $regex: query, $options: "i" } },
-
         { "Category.name": { $regex: query, $options: "i" } },
       ],
-    });
+    }).populate("Category");
 
     res.json(products);
   } catch (error) {
