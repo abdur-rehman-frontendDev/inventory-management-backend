@@ -36,4 +36,5 @@ module.exports = async ({
     },
   };
 };
-// PR for checking
+
+// Pagination helper function for Mongoose models. It takes in a model, query parameters, pagination options, and returns paginated results along with pagination metadata.

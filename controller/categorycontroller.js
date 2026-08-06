@@ -198,3 +198,4 @@ module.exports.Searchcategory = async (req, res) => {
     });
   }
 };
+// Pagination helper function for Mongoose models. It takes in a model, query parameters, pagination options, and returns paginated results along with pagination metadata.
