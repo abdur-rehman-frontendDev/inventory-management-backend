@@ -1,14 +1,12 @@
 const Product = require("../models/Productmodel");
+const Category = require("../models/Categorymodel");
 const {
   generateSKU,
   generateBarcode,
 } = require("../libs/productCodeGenerator");
-const {
-  getPagination,
-  buildPagination,
-} = require("../helpers/paginationHelper");
 
 const logActivity = require("../libs/logger");
+const paginate = require("../helpers/pagination");
 
 module.exports.Addproduct = async (req, res) => {
   const userId = req.user._id;
@@ -85,19 +83,33 @@ module.exports.Addproduct = async (req, res) => {
 
 module.exports.getProduct = async (req, res) => {
   try {
-    const Products = await Product.find({}).populate("Category");
+    const { page = 1, limit = 10 } = req.query;
 
-    const totalProduct = await Product.countDocuments({});
+    const result = await paginate({
+      model: Product,
+      page,
+      limit,
+      sort: { createdAt: -1 },
+      populate: "Category",
+    });
 
-    if (!Products || Products.length === 0) {
-      return res.status(404).json({ message: "Products not found" });
+    if (!result.data || result.data.length === 0) {
+      return res.status(404).json({
+        message: "Products not found",
+        Products: [],
+        pagination: result.pagination,
+      });
     }
 
-    res.status(200).json({ Products, totalProduct });
+    res.status(200).json({
+      Products: result.data,
+      pagination: result.pagination,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error getting products", error: error.message });
+    res.status(500).json({
+      message: "Error getting products",
+      error: error.message,
+    });
   }
 };
 
@@ -172,26 +184,87 @@ module.exports.EditProduct = async (req, res) => {
 
 module.exports.SearchProduct = async (req, res) => {
   try {
-    const { query } = req.query;
+    const { query, page = 1, limit = 10 } = req.query;
+
     if (!query) {
-      return res.status(400).json({ message: "Query parameter is required" });
+      return res.status(400).json({
+        message: "Query parameter is required",
+      });
     }
 
-    const products = await Product.find({
-      $or: [
-        { name: { $regex: query, $options: "i" } },
-        { Description: { $regex: query, $options: "i" } },
-        { "Category.name": { $regex: query, $options: "i" } },
-      ],
-    }).populate("Category");
+    // Find categories matching search query
+    const matchingCategories = await Category.find({
+      name: {
+        $regex: query,
+        $options: "i",
+      },
+    }).select("_id");
 
-    res.json(products);
+    const categoryIds = matchingCategories.map((category) => category._id);
+
+    const result = await paginate({
+      model: Product,
+      page,
+      limit,
+      query: {
+        $or: [
+          {
+            name: {
+              $regex: query,
+              $options: "i",
+            },
+          },
+          {
+            Description: {
+              $regex: query,
+              $options: "i",
+            },
+          },
+          {
+            Category: {
+              $in: categoryIds,
+            },
+          },
+        ],
+      },
+      sort: { createdAt: -1 },
+      populate: "Category",
+    });
+
+    res.status(200).json({
+      Products: result.data,
+      pagination: result.pagination,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error finding product", error: error.message });
+    res.status(500).json({
+      message: "Error finding product",
+      error: error.message,
+    });
   }
 };
+
+// module.exports.SearchProduct = async (req, res) => {
+//   try {
+//     const { query } = req.query;
+//     if (!query) {
+//       return res.status(400).json({ message: "Query parameter is required" });
+//     }
+
+//     const products = await Product.find({
+//       $or: [
+//         { name: { $regex: query, $options: "i" } },
+//         { Description: { $regex: query, $options: "i" } },
+//         { "Category.name": { $regex: query, $options: "i" } },
+//       ],
+//     }).populate("Category");
+
+//     res.json(products);
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error finding product", error: error.message });
+//   }
+// };
 
 module.exports.getTopProductsByQuantity = async (req, res) => {
   try {
